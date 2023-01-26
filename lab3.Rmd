@@ -1,0 +1,80 @@
+---
+title: 'Lab 3: binomal logistic regression'
+author: "Katheryn Moya"
+date: "1/26/2023"
+output: html_document
+---
+
+```{r setup, echo = TRUE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(tidymodels)
+library(palmerpenguins)
+library(GGally)
+library(jtools)
+library(AICcmodavg)
+```
+
+# Pseudocode
+
+* Examine our data (plots, tables, summary stats)
+* Identify a question
+* Wrangle the data
+* Identify some candidate models
+* Select among candidate models using AIC/BIC
+* Select among candidate models using K-fold cross validation
+* Select among candidate models using area under Receiver Operator Characteristic Curve
+
+# Explore data
+
+```{r}
+GGally::ggpairs(penguins %>% select(species, bill_length_mm:sex),#colon selects all the columns between those two
+        aes(color = species))
+```
+
+going to address the two species that are most similar
+
+```{r}
+class(penguins$species) #factors have different values to them
+levels(penguins$species) #can then make a subset dataframe
+
+adelie_chinstrap <- penguins %>% 
+  filter(species %in% c("Adelie","Chinstrap")) %>% #using %in% instead of == because it may match it against the wrong value so we may lose rows of observations
+  mutate (species = fct_drop(species)) %>%  #fct () treating it as a different kind of object
+  select(-year) %>% 
+  drop_na()
+  
+```
+
+## Let's check out the trends across variables
+
+```{r}
+ggplot(data = adelie_chinstrap, aes(x = body_mass_g, y = flipper_length_mm)) +
+  geom_point(aes(color = sex, shape = island)) +
+  facet_wrap(~species)
+
+ggplot(adelie_chinstrap, aes(x = body_mass_g, y = bill_length_mm)) +
+  geom_point(aes(color = sex, shape = island)) +
+  facet_wrap(~species)
+```
+
+
+## Let's do some binary logistic regression!
+
+```{r}
+f1 <- species ~ body_mass_g + flipper_length_mm + sex
+
+ad_chin_blr1 <- glm(formula = f1, data = adelie_chinstrap,
+                    family = 'binomal')
+ad_chin_blr1
+summary(ad_chin_blr1)
+
+blr1_tidy <- tidy(ad_chin_blr1)
+```
+
+```{r}
+
+```
+
+
